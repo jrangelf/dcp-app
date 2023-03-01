@@ -1,61 +1,58 @@
-version: "3.8"
+version: "3.3"
 
 services:
-  db:
-    container_name: pgsql-teste
-    image: postgres:14-alpine
+
+  pgsql-db:
+    container_name: dcp-app-pgsql
+    image: postgres
     restart: always
     user: postgres  # importante definir o usuário
     volumes:
-      - ./postgres/pgdata:/var/lib/postgresql/data
+      - ./pgsql:/var/lib/postgresql/data
+    
     environment:
       - LC_ALL=C.UTF-8
       - POSTGRES_PASSWORD=admin  # senha padrão
       - POSTGRES_USER=postgres  # usuário padrão
-      - POSTGRES_DB=postgres  # necessário porque foi configurado assim no settings      
+      - POSTGRES_DB=postgres  # necessário porque foi configurado assim no settings
     ports:
       - 5432:5432  # repare na porta externa 5431
     networks:
-      - projeto-network
+      - dcp-app
 
   pgadmin:
-    container_name: pgadmin-teste
+    container_name: dcp-app-pgadmin
     image: dpage/pgadmin4
     restart: unless-stopped
     volumes:
-       - ./pgadmin:/var/lib/pgadmin
+      - ./pgadmin:/var/lib/pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
       - 5051:80
-
     networks:
-      - projeto-network
-    depends_on:
-      - db
+      - dcp-app
 
   nginx:
-    container_name: nginx-teste
+    container_name: dcp-app-nginx
     image: nginx
     ports:
       - '80:80'
     volumes:
       - ./nginx/website:/usr/share/nginx/html
     depends_on:
-      - db
+      - pgsql-db
     networks:
-      - projeto-network
+      - dcp-app
 
-  
 
 volumes:
-  pgdata:  # mesmo nome do volume externo definido na linha 10
+  pgsql-db:  # mesmo nome do volume externo definido na linha 10
   pgadmin:
   nginx:
-  portainer:
-
+  
 networks:
-  projeto-network:
+  dcp-app:
 
