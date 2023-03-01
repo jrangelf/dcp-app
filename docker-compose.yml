@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  db:
+    container_name: pgsql-teste
+    image: postgres:14-alpine
+    restart: always
+    user: postgres  # importante definir o usuário
+    volumes:
+      - ./postgres/pgdata:/var/lib/postgresql/data
+    environment:
+      - LC_ALL=C.UTF-8
+      - POSTGRES_PASSWORD=admin  # senha padrão
+      - POSTGRES_USER=postgres  # usuário padrão
+      - POSTGRES_DB=postgres  # necessário porque foi configurado assim no settings      
+    ports:
+      - 5432:5432  # repare na porta externa 5431
+    networks:
+      - projeto-network
+
+  pgadmin:
+    container_name: pgadmin-teste
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - 5051:80
+
+    networks:
+      - projeto-network
+    depends_on:
+      - db
+
+  nginx:
+    container_name: nginx-teste
+    image: nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/website:/usr/share/nginx/html
+    depends_on:
+      - db
+    networks:
+      - projeto-network
+
+  
+
+volumes:
+  pgdata:  # mesmo nome do volume externo definido na linha 10
+  pgadmin:
+  nginx:
+  portainer:
+
+networks:
+  projeto-network:
+
